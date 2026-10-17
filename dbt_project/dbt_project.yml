@@ -1,0 +1,37 @@
+name: 'dtcc_open_lakehouse'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which profile dbt uses for connection credentials
+profile: 'dtcc_snowflake'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  dtcc_open_lakehouse:
+    # Staging layer: Views over raw Iceberg external tables
+    staging:
+      +materialized: view
+      +schema: SILVER
+      +tags: ["bronze_to_silver", "staging"]
+    
+    # Intermediate layer: Business logic & enrichment views
+    intermediate:
+      +materialized: view
+      +schema: SILVER
+      +tags: ["silver", "intermediate"]
+    
+    # Marts layer: Physical analytics tables for reporting & risk
+    marts:
+      +materialized: table
+      +schema: GOLD
+      +tags: ["gold", "marts", "analytics"]

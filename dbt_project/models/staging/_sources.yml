@@ -1,0 +1,38 @@
+version: 2
+
+sources:
+  - name: dtcc_bronze
+    database: DTCC_LAKEHOUSE
+    schema: BRONZE
+    description: "Raw Iceberg tables populated via Apache Polaris REST Catalog from S3 Parquet files."
+    tables:
+      - name: dtcc_sdr_swaps
+        description: "CFTC Part 43 public disseminated derivatives and swap transaction records."
+        columns:
+          - name: dissemination_id
+            description: "Primary key identifier for the SDR disseminated message."
+            tests:
+              - not_null
+          - name: original_dissemination_id
+            description: "Reference to previous dissemination_id if trade was corrected or cancelled."
+          - name: action_type
+            description: "Action flag: NEW, CORRECT, CANCEL."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['NEW', 'CORRECT', 'CANCEL']
+          - name: execution_timestamp
+            description: "UTC timestamp when trade was executed between counterparties."
+            tests:
+              - not_null
+          - name: cleared
+            description: "Clearing status: C = Cleared, U = Uncleared."
+          - name: asset_class
+            description: "Asset class: RATES, CREDIT, FX, EQUITIES, COMMODITIES."
+            tests:
+              - not_null
+          - name: notional_amount_1
+            description: "Principal contract notional volume in currency 1."
+          - name: notional_currency_1
+            description: "ISO currency code for notional leg 1."

@@ -1,0 +1,42 @@
+[
+  {
+    "engine": "DuckDB / Local Parquet",
+    "query_name": "Q1_Partition_Pruning",
+    "cold_latency_sec": 0.2058,
+    "warm_latency_sec": 0.1426,
+    "bytes_scanned": 1050944,
+    "estimated_cost_usd": 5e-06
+  },
+  {
+    "engine": "DuckDB / Local Parquet",
+    "query_name": "Q2_Heavy_Aggregation",
+    "cold_latency_sec": 0.1426,
+    "warm_latency_sec": 0.1411,
+    "bytes_scanned": 1050944,
+    "estimated_cost_usd": 5e-06
+  },
+  {
+    "engine": "DuckDB / Local Parquet",
+    "query_name": "Q3_Analytic_Window",
+    "cold_latency_sec": 0.1424,
+    "warm_latency_sec": 0.1421,
+    "bytes_scanned": 1050944,
+    "estimated_cost_usd": 5e-06
+  },
+  {
+    "engine": "Snowflake (Iceberg / S3)",
+    "query_name": "Q1_Partition_Pruning",
+    "cold_latency_sec": 0.8631,
+    "warm_latency_sec": 0.5125,
+    "bytes_scanned": "Pruned via Iceberg Manifests",
+    "estimated_cost_usd": 0.000719
+  },
+  {
+    "engine": "Snowflake (Iceberg / S3)",
+    "query_name": "Q2_Heavy_Aggregation",
+    "cold_latency_sec": 0.4045,
+    "warm_latency_sec": 0.3783,
+    "bytes_scanned": "Pruned via Iceberg Manifests",
+    "estimated_cost_usd": 0.000337
+  }
+]

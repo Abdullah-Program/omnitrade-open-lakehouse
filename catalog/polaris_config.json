@@ -1,0 +1,88 @@
+{
+  "$schema": "https://raw.githubusercontent.com/apache/polaris/main/docs/polaris-catalog-schema.json",
+  "catalog": {
+    "name": "dtcc_catalog",
+    "type": "INTERNAL",
+    "properties": {
+      "default-base-location": "s3://dtcc-open-lakehouse-bronze/iceberg/warehouse/",
+      "storage-type": "S3"
+    },
+    "storageConfiguration": {
+      "storageType": "S3",
+      "allowedLocations": [
+        "s3://dtcc-open-lakehouse-bronze/iceberg/warehouse/",
+        "s3://dtcc-open-lakehouse-bronze/iceberg/warehouse/bronze/",
+        "s3://dtcc-open-lakehouse-bronze/iceberg/warehouse/silver/",
+        "s3://dtcc-open-lakehouse-bronze/iceberg/warehouse/gold/"
+      ],
+      "roleArn": "arn:aws:iam::123456789012:role/PolarisS3AccessRole",
+      "region": "us-east-1"
+    }
+  },
+  "security": {
+    "principals": [
+      {
+        "name": "polaris-admin",
+        "type": "SERVICE",
+        "description": "Administrator service principal for data engineering pipelines"
+      },
+      {
+        "name": "snowflake-service-user",
+        "type": "SERVICE",
+        "description": "Snowflake Catalog Integration reader principal"
+      }
+    ],
+    "principalRoles": [
+      {
+        "name": "admin_role",
+        "description": "Full administrative control over Polaris catalogs"
+      },
+      {
+        "name": "snowflake_reader_role",
+        "description": "Read-only access for Snowflake External Volume queries"
+      }
+    ],
+    "catalogRoles": [
+      {
+        "name": "dtcc_catalog_admin",
+        "catalog": "dtcc_catalog",
+        "privileges": [
+          "CATALOG_MANAGE_ACCESS",
+          "CATALOG_MANAGE_CONTENT",
+          "NAMESPACE_CREATE",
+          "TABLE_CREATE",
+          "TABLE_DROP",
+          "TABLE_WRITE_DATA",
+          "TABLE_READ_DATA"
+        ]
+      },
+      {
+        "name": "dtcc_catalog_reader",
+        "catalog": "dtcc_catalog",
+        "privileges": [
+          "CATALOG_READ_PROPERTIES",
+          "NAMESPACE_READ_PROPERTIES",
+          "TABLE_READ_DATA"
+        ]
+      }
+    ],
+    "roleGrants": [
+      {
+        "principal": "polaris-admin",
+        "principalRole": "admin_role"
+      },
+      {
+        "principal": "snowflake-service-user",
+        "principalRole": "snowflake_reader_role"
+      },
+      {
+        "principalRole": "admin_role",
+        "catalogRole": "dtcc_catalog_admin"
+      },
+      {
+        "principalRole": "snowflake_reader_role",
+        "catalogRole": "dtcc_catalog_reader"
+      }
+    ]
+  }
+}
