@@ -97,7 +97,7 @@ flowchart TD
         Intermediate["PUBLIC_SILVER.int_trades_enriched\n(Tenors, USD FX Conversion, Trading Sessions)"]
         Mart1["PUBLIC_GOLD.fct_daily_settlement_volume\n(Daily Clearing Penetration & Spreads)"]
         Mart2["PUBLIC_GOLD.fct_counterparty_exposure\n(Bilateral Concentration & Systemic Risk)"]
-        Mart3["PUBLIC_GOLD.fct_risk_anomaly_flags\n(Statistical Z-Score Anomaly Detector >= 3σ)"]
+        Mart3["PUBLIC_GOLD.fct_risk_anomaly_flags\n(Statistical Z-Score Anomaly Detector 3-Sigma)"]
         Mart4["PUBLIC_GOLD.dynamic_live_market_surveillance\n(Snowflake Dynamic Table: 1-min Streaming Lag)"]
     end
 
@@ -420,12 +420,12 @@ The transformation pipeline organizes data into three distinct architectural lay
 
 ```mermaid
 flowchart LR
-    A["Raw Bronze Table<br/>(11,500 Trade Events)"] -->|"dbt Staging View<br/>Incremental Deduplication"| B["PUBLIC_SILVER.stg_dtcc_swaps"]
-    B -->|"dbt Intermediate View<br/>Tenors & FX Normalization"| C["PUBLIC_SILVER.int_trades_enriched"]
-    C -->|"dbt Gold Mart 1"| D["fct_daily_settlement_volume<br/>(28 Rows)"]
-    C -->|"dbt Gold Mart 2"| E["fct_counterparty_exposure<br/>(747 Rows)"]
-    C -->|"dbt Gold Mart 3"| F["fct_risk_anomaly_flags<br/>(32 Rows)"]
-    C -->|"dbt Dynamic Table"| G["dynamic_live_market_surveillance<br/>(Continuous Streaming)"]
+    A["Raw Bronze S3 Layer<br>(11,500 Trade Events)"] -->|dbt Staging View| B["Silver: stg_dtcc_swaps"]
+    B -->|Tenors & FX Normalization| C["Silver: int_trades_enriched"]
+    C -->|Gold Mart 1| D["fct_daily_settlement_volume"]
+    C -->|Gold Mart 2| E["fct_counterparty_exposure"]
+    C -->|Gold Mart 3| F["fct_risk_anomaly_flags"]
+    C -->|Dynamic Streaming| G["dynamic_live_market_surveillance"]
 ```
 
 ### Models & Business Value:
@@ -535,10 +535,10 @@ Best Production Persona | Local Unit Testing & CI/CD| Serverless Ad-Hoc Analytic
 
 ```mermaid
 flowchart LR
-    S3Bronze["S3 Bronze Bucket (Sydney)\ns3://dtcc-lakehouse-honey-2026/\nwarehouse/bronze/dtcc_sdr_swaps/data/"] -->|"Distributed Spark Read\n(51,000+ Trades / $1.41T)"| GlueJob["AWS Glue 4.0 Serverless Spark Job\ndtcc_s3_iceberg_transformation\n(2x G.1X Workers, Apache Spark 3.3)"]
-    GlueJob -->|"Cleansing & Feature Engineering\n• Large Trade Flags (>= $50M)\n• USD Notional Normalization"| Transform["Distributed Aggregation Engine\n• Volume by Asset Class & Cleared\n• Tenor & Clearing Penetration"]
-    Transform -->|"Optimized Parquet Write\n(ZSTD Compression)"| S3Silver["S3 Silver Curated Analytics\ns3://dtcc-lakehouse-honey-2026/\nwarehouse/silver/glue_market_surveillance/"]
-    GlueJob -.->|"IAM Role Auth"| IAMRole["arn:aws:iam::213449030333:\nrole/AWSGlueIcebergExecutionRole"]
+    S3Bronze["S3 Bronze Bucket (Sydney)<br>warehouse/bronze/dtcc_sdr_swaps/data/"] -->|Distributed S3 Read| GlueJob["AWS Glue 4.0 Serverless Spark Job<br>dtcc_s3_iceberg_transformation"]
+    GlueJob -->|Cleansing and Feature Engineering| Transform["Distributed Aggregation Engine<br>Asset Class & Clearing Penetration"]
+    Transform -->|Optimized Parquet Write| S3Silver["S3 Silver Curated Analytics<br>warehouse/silver/glue_market_surveillance/"]
+    GlueJob -.->|IAM Role Auth| IAMRole["IAM: AWSGlueIcebergExecutionRole"]
 ```
 
 ### 1. PySpark Job Specification ([`ingestion/aws_glue_spark_job.py`](file:///d:/programining/omnitrade-open-lakehouse/ingestion/aws_glue_spark_job.py))
